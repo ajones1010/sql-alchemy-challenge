@@ -72,6 +72,7 @@ def homepage():
         f"/api/v1.0/<start> <br/>"
         f"/api/v1.0/<start>/<end> <br/>"
     )
+
 # Percipitation Analysis
 @app.route("/api/v1.0/precipitation")
 def precipitation():
@@ -128,7 +129,7 @@ def equal_great_start(start_date):
 # Create Session (link) from Python to the Database
     session = Session(engine)
 # Defining Start Date
-    start_date = dt.datetime.strptime(start_date,"%Y%m%d")
+    start_date = dt.datetime.strptime(start_date,"%Y-%m-%d")
 # Querying the Minimum, Average, and High Temperature from Dates Greater Than or Equal to Start Date
     temp_start_greater = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
                         filter(Measurement.date >= start_date).all()
@@ -144,30 +145,32 @@ def equal_great_start(start_date):
         })
 # Displays Jsonify Data
     return jsonify(start_data)
-WORK FROM HERE FOR SECOND PART OF QUESTION 5
-# Minimum, Average, and High Temperature from Dates Greater Than or Equal to Start Date
+
+# Minimum, Average, and High Temperature from the Start Date to the End Date
 from flask import jsonify, json
 @app.route("/api/v1.0/<start_date>/<end_date>")
-def equal_great_start(end_date):
+def temp_start_end(start_date, end_date):
 # Create Session (link) from Python to the Database
     session = Session(engine)
 # Defining Start Date
-    start_date = dt.datetime.strptime(start_date,"%Y%m%d")
-# Querying the Minimum, Average, and High Temperature from Dates Greater Than or Equal to Start Date
-    temp_start_greater = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-                        filter(Measurement.date >= start_date).all()
+    start_date = dt.datetime.strptime(start_date,"%Y-%m-%d")
+# Defining End Date
+    end_date = dt.datetime.strptime(end_date,"%Y-%m-%d")
+# Querying the Minimum, Average, and High Temperature from the Start Date to the End Date
+    temp_start_end = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+                        filter(Measurement.date >= start_date, Measurement.date <= end_date).all()
 # Closing Session
     session.close()
 # Creates a dictionary to store the temperature data
-    start_data = {"Temperature Data": []}
-    for min_temp, avg_temp, max_temp in temp_start_greater:
-        start_data["Temperature Data"].append({
+    temperature_data = []
+    for min_temp, avg_temp, max_temp in temp_start_end:
+        temperature_data.append({
             "Minimum Temperature": min_temp,
             "Average Temperature": avg_temp,
             "Maximum Temperature": max_temp
         })
 # Displays Jsonify Data
-    return jsonify(start_data)
+    return jsonify({"Temperature Data": temperature_data})
 
 
 # Brings up HTML Link to Run API
